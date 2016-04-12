@@ -97,6 +97,7 @@ function searchOptions(options) {
      * options.searchbox_fieldselect - list of fields search can be focussed on
      * options.sharesave_link - whether to provide a copy of a link which can be saved
      * options.search_button - whether to provide a button to force a search
+	 * options.page_size_dropdown - whether to use a dropdown for the size selection
      */
 
     var thefacetview = "";
@@ -108,20 +109,41 @@ function searchOptions(options) {
 
     // initial button group of search controls
     thefacetview += '<div class="btn-group" style="display:inline-block; margin-right:5px;"> \
-        <a class="btn btn-small facetview_startagain" title="clear all search settings and start again" href=""><i class="icon-remove"></i></a> \
-        <a class="btn btn-small facetview_pagesize" title="change result set size" href="#"></a>';
+        <a class="btn btn-small facetview_startagain" title="clear all search settings and start again" href=""><i class="icon-remove"></i></a>';
+       if (!options.page_size_dropdown) {
+		   thefacetview += '<a class="btn btn-small facetview_pagesize" title="change result set size" href="#"></a>';
+	   }
+	   
 
     if (options.search_sortby.length > 0) {
         thefacetview += '<a class="btn btn-small facetview_order" title="current order descending. Click to change to ascending" \
             href="desc"><i class="icon-arrow-down"></i></a>';
     }
     thefacetview += '</div>';
+		
+	// Page size drop down menu
+	if (options.page_size_dropdown) {
+        thefacetview += '<select class="facetview_size_drop" style="border-radius:5px; \
+		-moz-border-radius:5px; -webkit-border-radius:5px; width:50px; background:#eee; margin:0 5px 21px 0;">';
+	    if (options.page_size_options.indexOf(options.page_size) == -1) {
+			options.page_size_options.push(options.page_size); // Add the default page size if it's not in the list
+			options.page_size_options = options.page_size_options.sort(function (a, b) { 
+			    return a - b;
+			});
+	    }
+	    for (var each = 0; each < options.page_size_options.length; each++) {
+	        var obj = options.page_size_options[each];
+	        thefacetview += '<option value="' + obj + '">' + obj + '</option>';
+	    };
+    thefacetview += '</select>';
+		};	
+
 
     // selection for search ordering
     if (options.search_sortby.length > 0) {
         thefacetview += '<select class="facetview_orderby" style="border-radius:5px; \
             -moz-border-radius:5px; -webkit-border-radius:5px; width:100px; background:#eee; margin:0 5px 21px 0;"> \
-            <option value="">order by ... relevance</option>';
+            <option value="">Relevance</option>';
 
         for (var each = 0; each < options.search_sortby.length; each++) {
             var obj = options.search_sortby[each];
@@ -157,7 +179,7 @@ function searchOptions(options) {
         corners = "border-radius:0px 0px 0px 0px; -moz-border-radius:0px 0px 0px 0px; -webkit-border-radius:0px 0px 0px 0px;"
     }
     thefacetview += '<input type="text" class="facetview_freetext span4" style="display:inline-block; margin:0 0 21px 0; background:#ecf4ff; ' + corners + '" name="q" \
-        value="" placeholder="search term" />';
+        value="" placeholder="filter by keyword" />';
 
     // search button
     if (options.search_button) {
@@ -253,11 +275,11 @@ function renderTermsFacet(facet, options) {
         style="color:#333; font-weight:bold;" href="{{FILTER_EXACT}}"><i class="icon-plus"></i> {{FILTER_DISPLAY}} \
         </a>';
 
-    if (facet.tooltip) {
-        var linktext = facet.tooltip_text ? facet.tooltip_text : "learn more";
-        filterTmpl += '<div class="facetview_tooltip" style="display:none"><a href="#" class="facetview_tooltip_more" data-field="{{FILTER_NAME}}">' + linktext + '</a></div>';
-        filterTmpl += '<div class="facetview_tooltip_value" style="display:none">' + facet.tooltip + '<br><a href="#" class="facetview_tooltip_less" data-field="{{FILTER_NAME}}">less</a></div>';
-    }
+    if (facet.tooltip) {		
+           var linktext = facet.tooltip_text ? facet.tooltip_text : "learn more";		
+           filterTmpl += '<div class="facetview_tooltip" style="display:none"><a href="#" class="facetview_tooltip_more" data-field="{{FILTER_NAME}}">' + linktext + '</a></div>';		
+           filterTmpl += '<div class="facetview_tooltip_value" style="display:none">' + facet.tooltip + '<br><a href="#" class="facetview_tooltip_less" data-field="{{FILTER_NAME}}">less</a></div>';		
+       }
 
     if (facet.controls) {
         filterTmpl += '<div class="btn-group facetview_filteroptions" style="display:none; margin-top:5px;"> \
@@ -352,13 +374,13 @@ function renderDateHistogramFacet(facet, options) {
      */
 
     // full template for the facet - we'll then go on and do some find and replace
-    var filterTmpl = '<table id="facetview_filter_{{FILTER_NAME}}" class="facetview_filters table table-bordered table-condensed table-striped" data-href="{{FILTER_EXACT}}"> \
+	var filterTmpl = '<table id="facetview_filter_{{FILTER_NAME}}" class="facetview_filters table table-bordered table-condensed table-striped" data-href="{{FILTER_EXACT}}"> \
         <tbody><tr><td><a class="facetview_filtershow" title="filter by {{FILTER_DISPLAY}}" \
         style="color:#333; font-weight:bold;" href="{{FILTER_EXACT}}"><i class="icon-plus"></i> {{FILTER_DISPLAY}} \
         </a> \
         </td></tr></tbody> \
         </table>';
-
+		
     // put the name of the field into FILTER_NAME and FILTER_EXACT
     filterTmpl = filterTmpl.replace(/{{FILTER_NAME}}/g, safeId(facet['field'])).replace(/{{FILTER_EXACT}}/g, facet['field']);
 
@@ -693,7 +715,6 @@ function renderTermsFacetResult(options, facet, result, selected_filters) {
      *
      * facet.value_function - the value function to be applied to all displayed values
      */
-
     var display = result.term
     if (facet.value_function) {
         display = facet.value_function(display)
@@ -744,18 +765,21 @@ function renderDateHistogramResult(options, facet, result, next) {
      * class: facetview_filtervalue - tags the top level element as being a facet result
      * class: facetview_filterchoice - tags the anchor wrapped around the name of the field
      */
-
+	result.time = new Date(result.time).getUTCFullYear(); //Hack to get it show year instead of milliseconds
+	
+	//next.time = new Date(next.time).getUTCFullYear();
     var data_from = result.time ? " data-from='" + result.time + "' " : "";
     var data_to = next ? " data-to='" + next.time + "' " : "";
-
-    var display = result.time;
+	
+    var display = result.time
+	//display = new Date(display).getUTCFullYear();
     if (facet.value_function) {
         display = facet.value_function(display)
     }
 
     var append = '<tr class="facetview_filtervalue" style="display:none;"><td><a class="facetview_filterchoice' +
                 '" data-field="' + facet['field'] + '" ' + data_to + data_from + ' href="#"><span class="facetview_filterchoice_text" dir="auto">' + escapeHtml(display) + '</span>' +
-                '<span class="facetview_filterchoice_count" dir="ltr"> (' + result.count + ')</span></a></td></tr>';
+                '<span class="facetview_filterchoice_count" dir="ltr"> (' +  result.count + ')</span></a></td></tr>';
     return append
 }
 
@@ -974,7 +998,7 @@ function renderActiveTermsFilter(options, facet, field, filter_list) {
 
         frag += '<span class="facetview_filterselected_text">' + value + '</span>&nbsp;';
         frag += '<a class="facetview_filterselected facetview_clear" data-field="' + field + '" data-value="' + value + '" alt="remove" title="Remove" href="' + value + '">';
-        frag += '<i class="icon-white icon-remove" style="margin-top:1px;"></i>';
+        frag += '<i class="icon-black icon-remove" style="margin-top:1px;"></i>';
         frag += "</a>";
 
         if (i !== filter_list.length - 1 && options.show_filter_logic) {
@@ -1032,7 +1056,7 @@ function renderActiveRangeFilter(options, facet, field, value) {
     frag += '<span class="facetview_filterselected_text">' + range.display + '</span>&nbsp;';
     frag += '<a class="facetview_filterselected facetview_clear" data-field="' + field + '" ' + data_to + data_from +
             ' alt="remove" title="Remove" href="#">';
-    frag += '<i class="icon-white icon-remove" style="margin-top:1px;"></i>';
+    frag += '<i class="icon-black icon-remove" style="margin-top:1px;"></i>';
     frag += "</a>";
 
     frag += "</div>";
@@ -1086,7 +1110,7 @@ function renderActiveGeoFilter(options, facet, field, value) {
     frag += '<span class="facetview_filterselected_text">' + range.display + '</span>&nbsp;';
     frag += '<a class="facetview_filterselected facetview_clear" data-field="' + field + '" ' + data_to + data_from +
             ' alt="Remove" title="remove" href="#">';
-    frag += '<i class="icon-white icon-remove" style="margin-top:1px;"></i>';
+    frag += '<i class="icon-black icon-remove" style="margin-top:1px;"></i>';
     frag += "</a>";
 
     frag += "</div>";
@@ -1126,7 +1150,7 @@ function renderActiveDateHistogramFilter(options, facet, field, value) {
     frag += '<span class="facetview_filterselected_text">' + valdisp + '</span>&nbsp;';
     frag += '<a class="facetview_filterselected facetview_clear" data-field="' + field + '" ' + data_from +
             ' alt="remove" title="Remove" href="#">';
-    frag += '<i class="icon-white icon-remove" style="margin-top:1px;"></i>';
+    frag += '<i class="icon-black icon-remove" style="margin-top:1px;"></i>';
     frag += "</a>";
 
     frag += "</div>";
@@ -1170,7 +1194,7 @@ function renderActiveTermsFilterButton(options, facet, field, filter_list) {
         }
 
         frag += '<a class="facetview_filterselected facetview_clear btn btn-info" data-field="' + field + '" data-value="' + escapeHtml(value) + '" alt="remove" title="remove" href="' + escapeHtml(value) + '">'
-        frag += '<span class="facetview_filterselected_text">' + escapeHtml(value) + '</span> <i class="icon-white icon-remove" style="margin-top:1px;"></i>'
+        frag += '<span class="facetview_filterselected_text">' + escapeHtml(value) + '</span> <i class="icon-black icon-remove" style="margin-top:1px;"></i>'
         frag += "</a>"
 
         if (i !== filter_list.length - 1 && options.show_filter_logic) {
@@ -1231,7 +1255,7 @@ function renderActiveRangeFilterButton(options, facet, field, value) {
 
     frag += '<a class="facetview_filterselected facetview_clear btn btn-info" data-field="' + field + '" ' + data_to + data_from +
             ' alt="remove" title="remove" href="#">'
-    frag += '<span class="facetview_filterselected_text">' + range.display + '</span> <i class="icon-white icon-remove" style="margin-top:1px;"></i>'
+    frag += '<span class="facetview_filterselected_text">' + range.display + '</span> <i class="icon-black icon-remove" style="margin-top:1px;"></i>'
     frag += "</a>"
 
     frag += "</div>"
@@ -1286,7 +1310,7 @@ function renderActiveGeoFilterButton(options, facet, field, value) {
 
     frag += '<a class="facetview_filterselected facetview_clear btn btn-info" data-field="' + field + '" ' + data_to + data_from +
             ' alt="remove" title="remove" href="#">'
-    frag += '<span class="facetview_filterselected_text">' + range.display + '</span> <i class="icon-white icon-remove" style="margin-top:1px;"></i>'
+    frag += '<span class="facetview_filterselected_text">' + range.display + '</span> <i class="icon-black icon-remove" style="margin-top:1px;"></i>'
     frag += "</a>"
 
     frag += "</div>"
@@ -1327,7 +1351,7 @@ function renderActiveDateHistogramFilterButton(options, facet, field, value) {
 
     frag += '<a class="facetview_filterselected facetview_clear btn btn-info" data-field="' + field + '" ' + data_from +
             ' alt="remove" title="remove" href="#">'
-    frag += '<span class="facetview_filterselected_text">' + escapeHtml(valdisp) + '</span> <i class="icon-white icon-remove" style="margin-top:1px;"></i>'
+    frag += '<span class="facetview_filterselected_text">' + escapeHtml(valdisp) + '</span> <i class="icon-black icon-remove" style="margin-top:1px;"></i>'
     frag += "</a>"
 
     frag += "</div>"
@@ -1368,21 +1392,21 @@ function setFacetVisibility(options, context, facet, visible) {
 // called when a request to open or close the facet is received
 // this should move the facet to the state dictated by facet.open
 function setFacetOpenness(options, context, facet) {
-    var el = context.find("#facetview_filter_" + safeId(facet.field));
+    var el = context.find("#facetview_filter_" + safeId(facet.field))
     var open = facet["open"]
     if (open) {
-        el.find(".facetview_filtershow").find("i").removeClass("icon-plus");
-        el.find(".facetview_filtershow").find("i").addClass("icon-minus");
-        el.find(".facetview_tooltip").show();
-        el.find(".facetview_tooltip_value").hide();
-        el.find(".facetview_filteroptions").show();
+        el.find(".facetview_filtershow").find("i").removeClass("icon-plus")
+        el.find(".facetview_filtershow").find("i").addClass("icon-minus")
+        el.find(".facetview_tooltip").show()
+        el.find(".facetview_tooltip_value").hide()
+        el.find(".facetview_filteroptions").show()
         el.find(".facetview_filtervalue").show()
     } else {
-        el.find(".facetview_filtershow").find("i").removeClass("icon-minus");
-        el.find(".facetview_filtershow").find("i").addClass("icon-plus");
-        el.find(".facetview_tooltip").hide();
-        el.find(".facetview_tooltip_value").hide();
-        el.find(".facetview_filteroptions").hide();
+        el.find(".facetview_filtershow").find("i").removeClass("icon-minus")
+        el.find(".facetview_filtershow").find("i").addClass("icon-plus")
+        el.find(".facetview_tooltip").hide()
+        el.find(".facetview_tooltip_value").hide()
+        el.find(".facetview_filteroptions").hide()
         el.find(".facetview_filtervalue").hide()
     }
 }
@@ -1410,6 +1434,12 @@ function setUIPageSize(options, context, params) {
 function setUIOrder(options, context, params) {
     var order = params.order;
     options.behaviour_results_ordering(options, context, order)
+}
+
+// set the UI to present the given page size
+function setUIPageSizeDrop(options, context, params) {
+    var size = params.size;
+    $('.facetview_size_drop', context).val(size);
 }
 
 // set the UI to present the order by field

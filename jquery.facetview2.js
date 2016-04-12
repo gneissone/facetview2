@@ -215,13 +215,14 @@ function getUrlVars() {
         // all of the possible options that will be used in the facetview lifecycle
         // along with their documentation
         var defaults = {
+		
             ///// elasticsearch parameters /////////////////////////////
             
             // the base search url which will respond to elasticsearch queries.  Generally ends with _search
             "search_url" : "http://localhost:9200/_search",
             
             // datatype for ajax requests to use - overall recommend using jsonp
-            "datatype" : "jsonp",
+            "datatype" : "json",
             
             // if set, should be either * or ~
             // if *, * will be prepended and appended to each string in the freetext search term
@@ -247,8 +248,15 @@ function getUrlVars() {
             // ES script_fields structure
             "script_fields" : false,
             
-            // number of results to display per page (i.e. to retrieve per query)
+            // number of results to display per page (i.e. to retrieve per query) 
+			// NOTE ignored if page_size_dropdown is set to true in options
             "page_size" : 10,
+			
+            // enable the result size drop down, remove custom entry box
+            "page_size_dropdown" : false,
+			
+			// page size options for down down menu
+			"page_size_options" : [10,25,50,100],
             
             // cursor position in the elasticsearch result set
             "from" : 0,
@@ -274,9 +282,9 @@ function getUrlVars() {
                 "open" : true|false,                                                // whether the facet should be open or closed (initially)
                 "hidden" : true|false                                               // whether the facet should be displayed at all (e.g. you may just want the data for a callback)
                 "disabled" : true|false                                             // whether the facet should be acted upon in any way.  This might be useful if you want to enable/disable facets under different circumstances via a callback
-                "tooltip" : "<html to be displayed under the facet's tool tip>"     // if present the facet will present a link with the tooltip_text which would give the user some text or other functionality
+				"tooltip" : "<html to be displayed under the facet's tool tip>"     // if present the facet will present a link with the tooltip_text which would give the user some text or other functionality		                
                 "tooltip_text" : "<text to use to open the tooltip>",               // sets the text of the tooltip link
-
+			
                 // terms facet only
                 
                 "size" : <num>,                                                     // how many terms should the facet limit to
@@ -343,9 +351,9 @@ function getUrlVars() {
             "default_date_histogram_sort" : "asc",
             "default_short_display" : false,
             "default_ignore_empty_string" : false,      // because filtering out empty strings is less performant
-            "default_tooltip" : false,
-            "default_tooltip_text" : "learn more",
-
+			"default_tooltip" : false,
+			"default_tooltip_text" : "learn more",	
+			
 
             ///// search bar configuration /////////////////////////////
             
@@ -512,6 +520,9 @@ function getUrlVars() {
 
             // called when the page size is changed
             "behaviour_set_page_size" : setUIPageSize,
+			
+            // called when page size changed by drop down
+            "behaviour_set_page_size_drop" : setUIPageSizeDrop,
 
             // called when the page order is changed
             "behaviour_set_order" : setUIOrder,
@@ -576,11 +587,17 @@ function getUrlVars() {
             // should the short url or the long url be displayed to the user?
             "show_short_url" : false
         };
+		
+		// Replace the default page size if page size options are defined
+		if (options.page_size_options && options.page_size_dropdown){
+			defaults['page_size'] = options.page_size_options[0];
+		}
         
         function deriveOptions() {
             // cleanup for ie8 purposes
             ie8compat(options);
             ie8compat(defaults);
+			
             
             // extend the defaults with the provided options
             var provided_options = $.extend(defaults, options);
@@ -667,7 +684,7 @@ function getUrlVars() {
                 if (!("disabled" in facet)) { facet["disabled"] = false }   // no default setter for this - if you don't specify disabled, they are not disabled
                 if (!("short_display" in facet)) { facet["short_display"] = provided_options.default_short_display }
                 if (!("ignore_empty_string" in facet)) { facet["ignore_empty_string"] = provided_options.default_ignore_empty_string }
-                if (!("tooltip" in facet)) { facet["tooltip"] = provided_options.default_tooltip }
+				if (!("tooltip" in facet)) { facet["tooltip"] = provided_options.default_tooltip }		
                 if (!("tooltip_text" in facet)) { facet["tooltip_text"] = provided_options.default_tooltip_text }
             }
             
@@ -680,7 +697,9 @@ function getUrlVars() {
 
         function uiFromOptions() {
             // set the current page size
+		
             options.behaviour_set_page_size(options, obj, {size: options.page_size});
+			options.behaviour_set_page_size_drop(options, obj, {size: options.page_size});
             
             // set the search order
             // NOTE: that this interface only supports single field ordering
@@ -753,6 +772,7 @@ function getUrlVars() {
                 options.page_size = parseInt(newhowmany);
                 options.from = 0;
                 options.behaviour_set_page_size(options, obj, {size: options.page_size});
+				options.behaviour_set_page_size_drop(options, obj, {size: options.page_size}); // TODO Remove this once I figure out how to implement the derp down correctly
                 doSearch();
             }
         }
@@ -785,6 +805,63 @@ function getUrlVars() {
             options.from = 0;
             doSearch();
         }
+		
+        /////// search ordering dropdown mod /////////////////////////////////
+        // TODO Implement dropdown
+        // 
+        function changePageSize(event) {
+            event.preventDefault();
+            
+            // synchronise the new sort with the options
+            savePageSizeOption();
+            
+            // reset the cursor and issue a search
+            options.from = 0;
+            doSearch();
+        }
+		
+		function savePageSizeOption() {
+			var sizechoice = $('.facetview_size_drop', obj).val();
+			
+            options.page_size = parseInt(sizechoice);
+            options.from = 0;
+			options.behaviour_set_page_size(options, obj, {size: options.page_size}); // TODO Remove once drop down is working correctly
+            options.behaviour_set_page_size_drop(options, obj, {size: options.page_size});
+            doSearch();
+            /*if (sizechoice.length != 0) {
+				console.log('yesss')
+                var sizing = [];
+                if (sortchoice.indexOf('[') === 0) {
+                    sort_fields = JSON.parse(sizechoice.replace(/'/g, '"'));
+                    for ( var each = 0; each < sort_fields.length; each++ ) {
+                        sf = sort_fields[each];
+                        sortobj = {};
+                        sortobj[sf] = {'order': $('.facetview_order', obj).attr('href')};
+                        sizing.push(sortobj);
+                    }
+                } else {
+                    sortobj = {};
+                    sortobj[sortchoice] = {'order': $('.facetview_order', obj).attr('href')};
+                    sizing.push(sortobj);
+                }
+                
+                options.page_size = sizing;
+            } else {
+                sortobj = {};
+                sortobj["_score"] = {'order': $('.facetview_order', obj).attr('href')};
+                sizing = [sortobj];
+                options.page_size = sizing
+            }
+			
+            // reset the cursor and issue a search
+            options.from = 0;
+            options.behaviour_set_page_size_drop(options, obj, {size: options.page_size});
+            
+           
+            doSearch();
+			*/
+			
+		}		
         
         function changeOrderBy(event) {
             event.preventDefault();
@@ -1037,9 +1114,9 @@ function getUrlVars() {
             // enable all/less on date histograms
             $(".facetview_date_histogram_showless", obj).unbind("click", clickDHLess).bind("click", clickDHLess);
             $(".facetview_date_histogram_showall", obj).unbind("click", clickDHAll).bind("click", clickDHAll);
-
-            // bind the tooltips
-            $(".facetview_tooltip_more").unbind("click", clickTooltipMore).bind("click", clickTooltipMore);
+			
+			// bind the tooltips		
+            $(".facetview_tooltip_more").unbind("click", clickTooltipMore).bind("click", clickTooltipMore);		
             $(".facetview_tooltip_less").unbind("click", clickTooltipLess).bind("click", clickTooltipLess);
         }
         
@@ -1220,23 +1297,22 @@ function getUrlVars() {
                 options.behaviour_facet_visibility(options, obj, facet, visible)
             });
         }
-
-        // select the facet tooltip
-        function clickTooltipMore(event) {
-            event.preventDefault();
-            var field = $(this).attr("data-field");
-            var el = facetElement("#facetview_filter_", field, obj);
-            el.find(".facetview_tooltip").hide();
-            el.find(".facetview_tooltip_value").show();
-        }
-
-        // select the facet tooltip
-        function clickTooltipLess(event) {
-            event.preventDefault();
-            var field = $(this).attr("data-field");
-            var el = facetElement("#facetview_filter_", field, obj);
-            el.find(".facetview_tooltip_value").hide();
-            el.find(".facetview_tooltip").show();
+		
+		// select the facet tooltip		
+        function clickTooltipMore(event) {		
+            event.preventDefault();		
+            var field = $(this).attr("data-field");		
+            var el = facetElement("#facetview_filter_", field, obj);		
+            el.find(".facetview_tooltip").hide();		
+            el.find(".facetview_tooltip_value").show();		
+        }		
+        // select the facet tooltip		
+        function clickTooltipLess(event) {		
+            event.preventDefault();		
+            var field = $(this).attr("data-field");		
+            var el = facetElement("#facetview_filter_", field, obj);		
+            el.find(".facetview_tooltip_value").hide();		
+            el.find(".facetview_tooltip").show();		
         }
         
         /**************************************************************
@@ -1495,6 +1571,7 @@ function getUrlVars() {
                 $('.facetview_pagesize', obj).bind('click', clickPageSize);
                 $('.facetview_order', obj).bind('click', clickOrder);
                 $('.facetview_orderby', obj).bind('change', changeOrderBy);
+				$('.facetview_size_drop', obj).bind('change', changePageSize);
                 $('.facetview_searchfield', obj).bind('change', changeSearchField);
                 $('.facetview_sharesave', obj).bind('click', clickShareSave);
                 $('.facetview_freetext', obj).bindWithDelay('keyup', keyupSearchText, options.freetext_submit_delay);
