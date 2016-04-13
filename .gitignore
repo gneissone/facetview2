@@ -48,4 +48,11 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 
-
+# OS X
+.DS_Store
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+._*
+Thumbs.db
+Desktop.ini

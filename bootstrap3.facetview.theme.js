@@ -64,7 +64,7 @@ function theFacetview(options) {
     thefacetview += '<div class="facetview_searching" style="display:none"></div>'
 
     // insert the table within which the results actually will go
-    thefacetview += '<table class="table table-striped table-bordered" id="facetview_results" dir="auto"></table>'
+    thefacetview += '<div class="panel panel-default"><table class="table table-striped table-bordered" id="facetview_results" dir="auto"></table></div>'
 
     // make space at the bottom for the pager
     thefacetview += '<div class="facetview_metadata"></div>';
@@ -102,9 +102,9 @@ function searchOptions(options) {
     // share and save link button
     var sharesave = "";
     if (options.sharesave_link) {
-        sharesave = '<div class="form-group"> \
-                <button class="btn btn-default facetview_sharesave" title="Share a link to this search" href="" style="margin-left: 10px"> \
-                    <span class="glyphicon glyphicon-share-alt"></span> \
+        sharesave = '<div class="col-md-2">  \
+                <button type="button" id="share" class="btn btn-default facetview_sharesave" title="Share a link to this search" href=""> \
+                    Share link <span class="glyphicon glyphicon-share-alt"></span> \
                 </button> \
             </div>';
     }
@@ -116,17 +116,20 @@ function searchOptions(options) {
             </button>';
     }
 
-    var buttons = '<span class="input-group-btn"> \
+    var buttons = '<div class="btn-group" role="group" aria-label="Options"> \
             <button type="submit" class="btn btn-default facetview_startagain" title="Clear all search settings and start again" href=""> \
                 <span class="glyphicon glyphicon-remove"></span> \
             </button> \
             <button type="submit" class="btn btn-default facetview_pagesize" title="Change result set size" href="#">10</button>' + sortbutton +  ' \
-        </span>';
+        ';
 
     var sortby = "";
     if (options.search_sortby.length > 0) {
-        sortby = '<select class="facetview_orderby form-control"> \
-                <option value="">order by ... relevance</option>';
+        sortby = '<div class="btn-group facetview_orderby" role="group"> \
+        <button id="btnGroupDrop1" type="button" class="btn btn-default dropdown-toggle \
+        " data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> \
+        Sort by... <span class="caret"></span></button> <ul class="dropdown-menu" \
+        aria-labelledby="btnGroupDrop1"> <li><a class="dropdown-item" value="" href="#">Relevance</a></li>';
 
         for (var each = 0; each < options.search_sortby.length; each++) {
             var obj = options.search_sortby[each];
@@ -138,17 +141,17 @@ function searchOptions(options) {
             } else {
                 sortoption = obj['field'];
             }
-            sortby += '<option value="' + sortoption + '">' + obj['display'] + '</option>';
+            sortby += '<li><a class="dropdown-item" value="' + sortoption + '" href="#">' + obj['display'] + '</a></li>';
         }
-        sortby += "</select>";
+        sortby += "</ul></div>";
     }
 
-    var controls_left = '<div class="form-group"> \
-            <div class="input-group">' + buttons + sortby + '</div></div>';
+    var controls_left = '<div id="location" class="form-group col-md-4"> \
+          <div class="input-group">' + buttons + sortby + '</div></div></div>';
 
     var searchfields = "";
     if (options.searchbox_fieldselect.length > 0) {
-        searchfields = '<div class="form-group"> \
+        searchfields = '<div class="form-group col-md-2"> \
                 <select class="facetview_searchfield form-control"> \
                     <option value="">Search all</option>';
 
@@ -168,12 +171,12 @@ function searchOptions(options) {
             </span>";
     }
 
-    var searchbox = '<div class="form-group"> \
-            <div class="input-group"> \
-                <input type="text" class="facetview_freetext form-control" name="q" value="" placeholder="Enter search" />';
+    var searchbox = '<div class="form-group col-md-5"> \
+            <div class="input-group col-md-12"> \
+                <input type="text" class="facetview_freetext form-control" name="q" value="" placeholder="Filter by keyword" />';
     searchbox += searchbutton + "</div></div>";
 
-    var searchOptions = '<form class="form-inline">' + sharesave + controls_left + searchfields + searchbox + "</form>";
+    var searchOptions = '<form class="form-inline"> <div class="row">' + sharesave + controls_left + searchfields + searchbox + "</div></form>";
 
     // share and save link
     var sharebox = "";
@@ -260,7 +263,7 @@ function renderTermsFacet(facet, options) {
      */
 
     // full template for the facet - we'll then go on and do some find and replace
-    var filterTmpl = '<table id="facetview_filter_{{FILTER_NAME}}" class="facetview_filters table table-bordered table-condensed table-striped" data-href="{{FILTER_EXACT}}"> \
+    var filterTmpl = '<div class="panel panel-default"><table id="facetview_filter_{{FILTER_NAME}}" class="facetview_filters table table-bordered table-condensed table-striped" data-href="{{FILTER_EXACT}}"> \
         <tr><td><a class="facetview_filtershow" title="filter by {{FILTER_DISPLAY}}" \
         style="color:#333; font-weight:bold;" href="{{FILTER_EXACT}}"><i class="glyphicon glyphicon-plus"></i> {{FILTER_DISPLAY}} \
         </a>';
@@ -280,7 +283,7 @@ function renderTermsFacet(facet, options) {
     }
 
     filterTmpl += '</td></tr> \
-        </table>';
+        </table></div>';
 
     // put the name of the field into FILTER_NAME and FILTER_EXACT
     filterTmpl = filterTmpl.replace(/{{FILTER_NAME}}/g, safeId(facet['field'])).replace(/{{FILTER_EXACT}}/g, facet['field']);
@@ -756,7 +759,8 @@ function renderDateHistogramResult(options, facet, result, next) {
      * class: facetview_filtervalue - tags the top level element as being a facet result
      * class: facetview_filterchoice - tags the anchor wrapped around the name of the field
      */
-
+    result.time = new Date(result.time).getUTCFullYear(); //Hack to get it show year instead of milliseconds
+   	
     var data_from = result.time ? " data-from='" + result.time + "' " : "";
     var data_to = next ? " data-to='" + next.time + "' " : "";
 
@@ -807,11 +811,11 @@ function basicPager(options) {
     var nextlink = '<a class="facetview_increment">next &raquo;</a>';
     if (options.data.found <= to) { nextlink = "<a class='facetview_increment facetview_inactive_link'>..</a>" }
 
-    var meta = '<div><ul class="pagination">';
+    var meta = '<nav><ul class="pagination">';
     meta += '<li class="prev">' + backlink + '</li>';
     meta += '<li class="active"><a>' + from + ' &ndash; ' + to + ' of ' + total + '</a></li>';
     meta += '<li class="next">' + nextlink + '</li>';
-    meta += "</ul></div>";
+    meta += "</ul></nav>";
 
     return meta
 }
@@ -1418,6 +1422,12 @@ function setUIPageSize(options, context, params) {
 function setUIOrder(options, context, params) {
     var order = params.order;
     options.behaviour_results_ordering(options, context, order)
+}
+
+// set the UI to present the given page size
+function setUIPageSizeDrop(options, context, params) {
+    var size = params.size;
+    $('.facetview_size_drop', context).val(size);
 }
 
 // set the UI to present the order by field

@@ -523,7 +523,7 @@ function getUrlVars() {
             "behaviour_set_page_size" : setUIPageSize,
 			
             // called when page size changed by drop down
-            "behaviour_set_page_size_drop" : setUIPageSizeDrop,
+             "behaviour_set_page_size_drop" : setUIPageSizeDrop,
 
             // called when the page order is changed
             "behaviour_set_order" : setUIOrder,
@@ -700,7 +700,7 @@ function getUrlVars() {
             // set the current page size
 		
             options.behaviour_set_page_size(options, obj, {size: options.page_size});
-			options.behaviour_set_page_size_drop(options, obj, {size: options.page_size});
+			// options.behaviour_set_page_size_drop(options, obj, {size: options.page_size});
             
             // set the search order
             // NOTE: that this interface only supports single field ordering
@@ -784,7 +784,10 @@ function getUrlVars() {
         function clickStartAgain(event) {
             event.preventDefault();
             var base = window.location.href.split("?")[0];
-            window.location.replace(base);
+            if(window.location.href.match(base)) {
+              window.location.reload();
+            }
+            else { window.location.replace(base);}
         }
         
         /////// search ordering /////////////////////////////////
@@ -1574,9 +1577,9 @@ function getUrlVars() {
                 $('.facetview_morefacetvals', obj).bind('click', clickMoreFacetVals);
                 $('.facetview_sort', obj).bind('click', clickSort);
                 $('.facetview_or', obj).bind('click', clickOr);
-				
-				        $(document).on('click', '.facetview_allfacetvals', clickAllFacetVals);
-                
+
+                $(document).on('click', '.facetview_allfacetvals', clickAllFacetVals);
+
                 // if a post initialisation callback is provided, run it
                 if (typeof options.post_init_callback === 'function') {
                     options.post_init_callback(options, obj);
