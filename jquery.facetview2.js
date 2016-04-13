@@ -233,6 +233,7 @@ function getUrlVars() {
             // due to a bug in elasticsearch's clustered node facet counts, we need to inflate
             // the number of facet results we need to ensure that the results we actually want are
             // accurate.  This option tells us by how much.
+			// NOTE This also determines the max value of the '... view n more' link at the end of the facet
             "elasticsearch_facet_inflation" : 100,
             
             ///// query aspects /////////////////////////////
@@ -828,38 +829,6 @@ function getUrlVars() {
 			options.behaviour_set_page_size(options, obj, {size: options.page_size}); // TODO Remove once drop down is working correctly
             options.behaviour_set_page_size_drop(options, obj, {size: options.page_size});
             doSearch();
-            /*if (sizechoice.length != 0) {
-				console.log('yesss')
-                var sizing = [];
-                if (sortchoice.indexOf('[') === 0) {
-                    sort_fields = JSON.parse(sizechoice.replace(/'/g, '"'));
-                    for ( var each = 0; each < sort_fields.length; each++ ) {
-                        sf = sort_fields[each];
-                        sortobj = {};
-                        sortobj[sf] = {'order': $('.facetview_order', obj).attr('href')};
-                        sizing.push(sortobj);
-                    }
-                } else {
-                    sortobj = {};
-                    sortobj[sortchoice] = {'order': $('.facetview_order', obj).attr('href')};
-                    sizing.push(sortobj);
-                }
-                
-                options.page_size = sizing;
-            } else {
-                sortobj = {};
-                sortobj["_score"] = {'order': $('.facetview_order', obj).attr('href')};
-                sizing = [sortobj];
-                options.page_size = sizing
-            }
-			
-            // reset the cursor and issue a search
-            options.from = 0;
-            options.behaviour_set_page_size_drop(options, obj, {size: options.page_size});
-            
-           
-            doSearch();
-			*/
 			
 		}		
         
@@ -1018,6 +987,27 @@ function getUrlVars() {
             var newmore = prompt('Currently showing ' + currentval + '. How many would you like instead?');
             if (newmore) {
                 morewhat['size'] = parseInt(newmore);
+                options.behaviour_set_facet_size(options, obj, {facet: morewhat})
+                doSearch();
+            }
+        }
+		
+        // show ALL facet values
+        function clickAllFacetVals(event) {
+            event.preventDefault();
+            var morewhat = selectFacet(options, $(this).attr("href"));
+			var maxsize = options.data.facets[morewhat.field].length
+			
+            if ('size' in morewhat ) {
+                var currentval = morewhat['size'];
+            } else {
+                var currentval = options.default_facet_size;
+            }
+			
+            var newmore = maxsize - currentval
+
+            if (newmore) {
+                morewhat['size'] = parseInt(newmore) + currentval;
                 options.behaviour_set_facet_size(options, obj, {facet: morewhat})
                 doSearch();
             }
@@ -1584,6 +1574,8 @@ function getUrlVars() {
                 $('.facetview_morefacetvals', obj).bind('click', clickMoreFacetVals);
                 $('.facetview_sort', obj).bind('click', clickSort);
                 $('.facetview_or', obj).bind('click', clickOr);
+				
+				        $(document).on('click', '.facetview_allfacetvals', clickAllFacetVals);
                 
                 // if a post initialisation callback is provided, run it
                 if (typeof options.post_init_callback === 'function') {

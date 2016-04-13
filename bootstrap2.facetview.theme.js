@@ -284,6 +284,7 @@ function renderTermsFacet(facet, options) {
     if (facet.controls) {
         filterTmpl += '<div class="btn-group facetview_filteroptions" style="display:none; margin-top:5px;"> \
             <a class="btn btn-small facetview_morefacetvals" id="facetview_facetvals_{{FILTER_NAME}}" title="filter list size" href="{{FILTER_EXACT}}">0</a> \
+		    <!-- <a class="btn btn-small facetview_allfacetvals" title="filter list size" href="{{FILTER_EXACT}}">+' + options.elasticsearch_facet_inflation + '</a> --> \
             <a class="btn btn-small facetview_sort" id="facetview_sort_{{FILTER_NAME}}" title="filter value order" href="{{FILTER_EXACT}}"></a> \
             <a class="btn btn-small facetview_or" id="facetview_or_{{FILTER_NAME}}" href="{{FILTER_EXACT}}">OR</a> \
         </div>';
@@ -441,9 +442,19 @@ function renderTermsFacetValues(options, facet) {
         if ($.inArray(f.term.toString(), selected_filters) === -1) { // the toString helps us with non-string filters (e.g integers)
             var append = options.render_terms_facet_result(options, facet, f, selected_filters)
             frag += append
+			
         }
     }
 
+	// Add a ... view n more link at end of facet list
+	var facet_terms_remaining = []
+	facet_terms_remaining[facet.field] = options.data.facets[facet.field].length - facet["values"].length
+	
+	if (facet_terms_remaining[facet.field] > 0) {
+	frag += '<div id="testdiv"><tr class="facetview_filtervalue" style="display:none;"><td><a class="facetview_allfacetvals" value="5" title="filter list size" href="' +
+	    facet.field + '"> <b>... view ' + facet_terms_remaining[facet.field] + ' more</b>' +
+	   '</a></td></tr></div>';
+	}
     return frag
 }
 
