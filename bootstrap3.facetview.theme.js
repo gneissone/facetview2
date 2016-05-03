@@ -55,7 +55,7 @@ function theFacetview(options) {
     thefacetview += '<div class="facetview_search_options_container"></div>';
 
     // make space for the selected filters
-    thefacetview += '<div style="margin-top: 20px"><div class="row"><div class="col-md-12"><div class="btn-toolbar" id="facetview_selectedfilters"></div></div></div></div>';
+    thefacetview += '<div style="margin-top: 20px" id="facetview_selectedfilters"><div class="row"><div class="col-md-12"><div class="btn-toolbar" id="facetview_selectedfilters"></div></div></div></div>';
 
     // make space at the top for the pager
     thefacetview += '<div class="facetview_metadata" style="margin-top:20px;"></div>';
@@ -103,7 +103,7 @@ function searchOptions(options) {
     var sharesave = "";
     if (options.sharesave_link) {
         sharesave = '<div class="col-md-2">  \
-                <button type="button" id="share" class="btn btn-default facetview_sharesave" title="Share a link to this search" href=""> \
+                <button type="button" id="share" class="btn btn-custom facetview_sharesave" title="Share a link to this search" href=""> \
                     Share link <span class="glyphicon glyphicon-share-alt"></span> \
                 </button> \
             </div>';
@@ -111,25 +111,48 @@ function searchOptions(options) {
 
     var sortbutton = "";
     if (options.search_sortby.length > 0) {
-        sortbutton = '<button type="submit" class="btn btn-default facetview_order" title="Current order descending. Click to change to ascending" href="desc"> \
+        sortbutton = '<button type="submit" class="btn btn-custom facetview_order" title="Current order descending. Click to change to ascending" value="desc" href="desc"> \
                 <span class="glyphicon glyphicon-arrow-down"></span> \
             </button>';
     }
+    
+    var pagesizedrop = "";
+    // Page size drop down menu
+    if (options.page_size_dropdown) {
+          pagesizedrop += '<div class="btn-group" role="group"> \
+          <button id="btnGroupDrop2" type="button" class="btn btn-custom dropdown-page-size-toggle \
+          " data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> \
+          Page size <span class="caret"></span></button> <ul class="dropdown-menu" \
+          aria-labelledby="btnGroupDrop1">' ;
+        if (options.page_size_options.indexOf(options.page_size) == -1) {
+        options.page_size_options.push(options.page_size); // Add the default page size if it's not in the list
+        options.page_size_options = options.page_size_options.sort(function (a, b) { 
+            return a - b;
+        });
+        }
+        for (var each = 0; each < options.page_size_options.length; each++) {
+            var obj = options.page_size_options[each];
+            pagesizedrop += '<li><a class="dropdown-item facetview_size_drop" id="' + obj + '">' + obj + '</a></li>';
+        };
+      pagesizedrop += '</ul></div>';
+      };	
+    
+    var pagesizebutton = ''
+    if (!options.page_size_dropdown) {
+        pagesizebutton += '<a class="btn btn-small facetview_pagesize" title="change result set size" href="#"></a>';
+      }
+    else {
+      pagesizebutton = pagesizedrop
+    }
 
-    var buttons = '<div class="btn-group" role="group" aria-label="Options"> \
-            <button type="submit" class="btn btn-default facetview_startagain" title="Clear all search settings and start again" href=""> \
-                <span class="glyphicon glyphicon-remove"></span> \
-            </button> \
-            <button type="submit" class="btn btn-default facetview_pagesize" title="Change result set size" href="#">10</button>' + sortbutton +  ' \
-        ';
 
     var sortby = "";
     if (options.search_sortby.length > 0) {
-        sortby = '<div class="btn-group facetview_orderby" role="group"> \
-        <button id="btnGroupDrop1" type="button" class="btn btn-default dropdown-toggle \
+        sortby = '<div class="btn-group" role="group"> \
+        <button id="btnGroupDrop1" type="button" class="btn btn-custom dropdown-toggle \
         " data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> \
         Sort by... <span class="caret"></span></button> <ul class="dropdown-menu" \
-        aria-labelledby="btnGroupDrop1"> <li><a class="dropdown-item" value="" href="#">Relevance</a></li>';
+        aria-labelledby="btnGroupDrop1"> <li><a class="dropdown-item facetview_orderby" id="_score" href="_score">Relevance</a></li>';
 
         for (var each = 0; each < options.search_sortby.length; each++) {
             var obj = options.search_sortby[each];
@@ -141,13 +164,19 @@ function searchOptions(options) {
             } else {
                 sortoption = obj['field'];
             }
-            sortby += '<li><a class="dropdown-item" value="' + sortoption + '" href="#">' + obj['display'] + '</a></li>';
+            sortby += '<li><a class="dropdown-item facetview_orderby" id="' + sortoption + '" href="name.exact">' + obj['display'] + '</a></li>';
         }
         sortby += "</ul></div>";
     }
-
-    var controls_left = '<div id="location" class="form-group col-md-4"> \
-          <div class="input-group">' + buttons + sortby + '</div></div></div>';
+    
+    var buttons = '<div class="btn-group" role="group" aria-label="Options"> \
+            <button type="submit" class="btn btn-custom facetview_startagain" title="Clear all search settings and start again" href=""> \
+                <span class="glyphicon glyphicon-remove"></span></button> \
+          ' + pagesizebutton + sortby + sortbutton + ' \
+        ';
+    
+    var controls_left = '<div id="location" class="form-group col-md-5"> \
+          <div class="input-group">' + buttons + '</div></div></div>';
 
     var searchfields = "";
     if (options.searchbox_fieldselect.length > 0) {
@@ -264,25 +293,23 @@ function renderTermsFacet(facet, options) {
 
     // full template for the facet - we'll then go on and do some find and replace
     var filterTmpl = '<div class="panel panel-default"><table id="facetview_filter_{{FILTER_NAME}}" class="facetview_filters table table-bordered table-condensed table-striped" data-href="{{FILTER_EXACT}}"> \
-        <tr><td><a class="facetview_filtershow" title="filter by {{FILTER_DISPLAY}}" \
-        style="color:#333; font-weight:bold;" href="{{FILTER_EXACT}}"><i class="glyphicon glyphicon-plus"></i> {{FILTER_DISPLAY}} \
-        </a>';
+        <tr><td class="facetview_filtershow" data-href="{{FILTER_EXACT}}" title="filter by {{FILTER_DISPLAY}}"> \
+        <i class="glyphicon glyphicon-triangle-right"></i> {{FILTER_DISPLAY}} \
+        </a></tr></td>';
 
     if (facet.controls) {
-        filterTmpl += '<div class="facetview_filteroptions">\
+        filterTmpl += '  <tr class="facetview_filteroptions" style="display:none"><td>\
             <form class="form-inline">\
-                <div class="input-group">\
-                    <span class="input-group-btn">\
+                <div class="btn-group" role="group">\
                         <button class="btn btn-default btn-sm facetview_morefacetvals" id="facetview_facetvals_{{FILTER_NAME}}" title="Filter list size" href="{{FILTER_EXACT}}">0</button> \
                         <button class="btn btn-default btn-sm facetview_sort" id="facetview_sort_{{FILTER_NAME}}" title="Filter value order" href="{{FILTER_EXACT}}"></button> \
                         <button class="btn btn-default btn-sm facetview_or" id="facetview_or_{{FILTER_NAME}}" href="{{FILTER_EXACT}}">OR</button> \
-                    </span>\
                 </div>\
             </form>\
-        </div>';
+        </td></tr>';
     }
 
-    filterTmpl += '</td></tr> \
+    filterTmpl += ' \
         </table></div>';
 
     // put the name of the field into FILTER_NAME and FILTER_EXACT
@@ -309,8 +336,8 @@ function renderRangeFacet(facet, options) {
 
     // full template for the facet - we'll then go on and do some find and replace
     var filterTmpl = '<table id="facetview_filter_{{FILTER_NAME}}" class="facetview_filters table table-bordered table-condensed table-striped" data-href="{{FILTER_EXACT}}"> \
-        <tr><td><a class="facetview_filtershow" title="filter by {{FILTER_DISPLAY}}" \
-        style="color:#333; font-weight:bold;" href="{{FILTER_EXACT}}"><i class="glyphicon glyphicon-plus"></i> {{FILTER_DISPLAY}} \
+        <tr><td class="facetview_filtershow" data-href="{{FILTER_EXACT}}" title="filter by {{FILTER_DISPLAY}}"> \
+        <i class="glyphicon glyphicon-triangle-right"></i> {{FILTER_DISPLAY}} \
         </a> \
         </td></tr> \
         </table>';
@@ -338,8 +365,8 @@ function renderGeoFacet(facet, options) {
      */
      // full template for the facet - we'll then go on and do some find and replace
     var filterTmpl = '<table id="facetview_filter_{{FILTER_NAME}}" class="facetview_filters table table-bordered table-condensed table-striped" data-href="{{FILTER_EXACT}}"> \
-        <tr><td><a class="facetview_filtershow" title="filter by {{FILTER_DISPLAY}}" \
-        style="color:#333; font-weight:bold;" href="{{FILTER_EXACT}}"><i class="glyphicon glyphicon-plus"></i> {{FILTER_DISPLAY}} \
+        <tr><td class="facetview_filtershow" data-href="{{FILTER_EXACT}}" title="filter by {{FILTER_DISPLAY}}"> \
+        <i class="glyphicon glyphicon-triangle-right"></i> {{FILTER_DISPLAY}} \
         </a> \
         </td></tr> \
         </table>';
@@ -368,8 +395,8 @@ function renderDateHistogramFacet(facet, options) {
 
     // full template for the facet - we'll then go on and do some find and replace
     var filterTmpl = '<table id="facetview_filter_{{FILTER_NAME}}" class="facetview_filters table table-bordered table-condensed table-striped" data-href="{{FILTER_EXACT}}"> \
-        <tbody><tr><td><a class="facetview_filtershow" title="filter by {{FILTER_DISPLAY}}" \
-        style="color:#333; font-weight:bold;" href="{{FILTER_EXACT}}"><i class="glyphicon glyphicon-plus"></i> {{FILTER_DISPLAY}} \
+        <tbody><tr><td class="facetview_filtershow" data-href="{{FILTER_EXACT}}" title="filter by {{FILTER_DISPLAY}}"> \
+        <i class="glyphicon glyphicon-triangle-right"></i> {{FILTER_DISPLAY}} \
         </a> \
         </td></tr></tbody> \
         </table>';
@@ -436,7 +463,17 @@ function renderTermsFacetValues(options, facet) {
             frag += append
         }
     }
+    
+    // Add a ... view n more link at end of facet list
+    var facet_terms_remaining = []
+    facet_terms_remaining[facet.field] = options.data.facets[facet.field].length - facet["values"].length
+    
+    if (facet_terms_remaining[facet.field] > 0) {
+    frag += '<div id="testdiv"><tr class="facetview_filtervalue" style="display:none;"><td><a class="facetview_allfacetvals" value="5" title="filter list size" href="' +
+        facet.field + '"> <b>... view ' + facet_terms_remaining[facet.field] + ' more</b>' +
+       '</a></td></tr></div>';
 
+     }
     return frag
 }
 
@@ -1387,13 +1424,13 @@ function setFacetOpenness(options, context, facet) {
     var el = context.find("#facetview_filter_" + safeId(facet.field))
     var open = facet["open"]
     if (open) {
-        el.find(".facetview_filtershow").find("i").removeClass("glyphicon-plus")
-        el.find(".facetview_filtershow").find("i").addClass("glyphicon-minus")
+        el.find(".facetview_filtershow").find("i").removeClass("glyphicon-triangle-right")
+        el.find(".facetview_filtershow").find("i").addClass("glyphicon-triangle-bottom")
         el.find(".facetview_filteroptions").show()
         el.find(".facetview_filtervalue").show()
     } else {
-        el.find(".facetview_filtershow").find("i").removeClass("glyphicon-minus")
-        el.find(".facetview_filtershow").find("i").addClass("glyphicon-plus")
+        el.find(".facetview_filtershow").find("i").removeClass("glyphicon-triangle-bottom")
+        el.find(".facetview_filtershow").find("i").addClass("glyphicon-triangle-right")
         el.find(".facetview_filteroptions").hide()
         el.find(".facetview_filtervalue").hide()
     }
@@ -1470,12 +1507,12 @@ function setUIFacetAndOr(options, context, params) {
     var facet = params.facet
     var el = facetElement("#facetview_or_", facet["field"], context);
     if (facet.logic === "OR") {
-        el.css({'color':'#fff'});
+        el.css({'color':'#000'});
 
         // FIXME: resolve this when we get to the filter display
         $('.facetview_filterselected[rel="' + $(this).attr('href') + '"]', context).addClass('facetview_logic_or');
     } else {
-        el.css({'color':'#ccc'});
+        el.css({'color':'#A8A8A8'});
 
         // FIXME: resolve this when we got to the filter display
         $('.facetview_filterselected[rel="' + $(this).attr('href') + '"]', context).removeClass('facetview_logic_or');

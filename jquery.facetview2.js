@@ -784,60 +784,63 @@ function getUrlVars() {
         function clickStartAgain(event) {
             event.preventDefault();
             var base = window.location.href.split("?")[0];
-            if(window.location.href.match(base)) {
-              window.location.reload();
-            }
-            else { window.location.replace(base);}
+            //console.log(base)
+            window.location.replace(base);
+            //if(window.location.href.match(base)) {
+            //  window.location.reload();
+            //}
+            //else { window.location.replace(base);}
         }
+		
+        /////// search ordering dropdown mod /////////////////////////////////
+        // 
+        function changePageSize(event) {
+            event.preventDefault();
+            sizechoice = ($(this).attr('id'))
+            
+            // synchronise the new sort with the options
+            savePageSizeOption(sizechoice);
+            
+            // reset the cursor and issue a search
+            options.from = 0;
+            doSearch();
+        }
+		
+		function savePageSizeOption(sizechoice) {
+        if (!sizechoice) {
+          var sizechoice = $('.facetview_size_drop', obj).val();
+        }
+  			
+        options.page_size = parseInt(sizechoice);
+        options.from = 0;
+        options.behaviour_set_page_size(options, obj, {size: options.page_size}); // TODO Remove once drop down is working correctly
+        options.behaviour_set_page_size_drop(options, obj, {size: options.page_size});
+        doSearch();
+		}		
+    
+    function changeOrderBy(event) {
+        event.preventDefault();
+        sortchoice = ($(this).attr('id'))
+        options.behaviour_set_order_by(options, obj, {orderby: sortchoice})
+        $('.dropdown-toggle').html($(this).html() + '<span class="caret"></span>');
+        // synchronise the new sort with the options
+        saveSortOption(sortchoice);
         
+        // reset the cursor and issue a search
+        options.from = 0;
+        doSearch();
+    }    
+
         /////// search ordering /////////////////////////////////
         
         function clickOrder(event) {
             event.preventDefault();
-            
             // switch the sort options around
             if ($(this).attr('href') == 'desc') {
                 options.behaviour_set_order(options, obj, {order: "asc"})
             } else {
                 options.behaviour_set_order(options, obj, {order: "desc"})
             };
-            
-            // synchronise the new sort with the options
-            saveSortOption();
-            
-            // reset the cursor and issue a search
-            options.from = 0;
-            doSearch();
-        }
-		
-        /////// search ordering dropdown mod /////////////////////////////////
-        // TODO Implement dropdown
-        // 
-        function changePageSize(event) {
-            event.preventDefault();
-            
-            // synchronise the new sort with the options
-            savePageSizeOption();
-            
-            // reset the cursor and issue a search
-            options.from = 0;
-            doSearch();
-        }
-		
-		function savePageSizeOption() {
-			var sizechoice = $('.facetview_size_drop', obj).val();
-			
-            options.page_size = parseInt(sizechoice);
-            options.from = 0;
-			options.behaviour_set_page_size(options, obj, {size: options.page_size}); // TODO Remove once drop down is working correctly
-            options.behaviour_set_page_size_drop(options, obj, {size: options.page_size});
-            doSearch();
-			
-		}		
-        
-        function changeOrderBy(event) {
-            event.preventDefault();
-            
             // synchronise the new sort with the options
             saveSortOption();
             
@@ -846,33 +849,37 @@ function getUrlVars() {
             doSearch();
         }
 
-        // save the sort options from the current UI
-        function saveSortOption() {
-            var sortchoice = $('.facetview_orderby', obj).val();
-            if (sortchoice.length != 0) {
-                var sorting = [];
-                if (sortchoice.indexOf('[') === 0) {
-                    sort_fields = JSON.parse(sortchoice.replace(/'/g, '"'));
-                    for ( var each = 0; each < sort_fields.length; each++ ) {
-                        sf = sort_fields[each];
-                        sortobj = {};
-                        sortobj[sf] = {'order': $('.facetview_order', obj).attr('href')};
-                        sorting.push(sortobj);
-                    }
-                } else {
-                    sortobj = {};
-                    sortobj[sortchoice] = {'order': $('.facetview_order', obj).attr('href')};
-                    sorting.push(sortobj);
-                }
-                
-                options.sort = sorting;
-            } else {
-                sortobj = {};
-                sortobj["_score"] = {'order': $('.facetview_order', obj).attr('href')};
-                sorting = [sortobj];
-                options.sort = sorting
-            }
-        }
+    // save the sort options from the current UI
+           function saveSortOption(sortchoice) {
+
+               if (!sortchoice) { // I'm sure there's a beter way to do this
+                 var sortchoice = $('.facetview_orderby', obj).val();
+               }
+               
+               if (sortchoice) {
+                   var sorting = [];
+                   if (sortchoice.indexOf('[') === 0) {
+                       sort_fields = JSON.parse(sortchoice.replace(/'/g, '"'));
+                       for ( var each = 0; each < sort_fields.length; each++ ) {
+                           sf = sort_fields[each];
+                           sortobj = {};
+                           sortobj[sf] = {'order': $('.facetview_order', obj).attr('href')};
+                           sorting.push(sortobj);
+                       }
+                   } else {
+                       sortobj = {};
+                       sortobj[sortchoice] = {'order': $('.facetview_order', obj).attr('href')};
+                       sorting.push(sortobj);
+                   }
+                   
+                   options.sort = sorting;
+               } else {
+                   sortobj = {};
+                   sortobj["_score"] = {'order': $('.facetview_order', obj).attr('href')};
+                   sorting = [sortobj];
+                   options.sort = sorting
+               }
+           }
         
         /////// search fields /////////////////////////////////
         
@@ -967,8 +974,8 @@ function getUrlVars() {
         // show the filter values
         function clickFilterShow(event) {
             event.preventDefault();
-            
-            var name = $(this).attr("href");
+            window.getSelection().removeAllRanges(); // Hack for some goofiness introduced by allowing the whole facet row to be clickable
+            var name = $(this).attr("data-href");
             var facet = selectFacet(options, name);
             var el = facetElement("#facetview_filter_", name, obj);
             
@@ -1563,8 +1570,8 @@ function getUrlVars() {
                 $(".facetview_startagain", obj).bind("click", clickStartAgain);
                 $('.facetview_pagesize', obj).bind('click', clickPageSize);
                 $('.facetview_order', obj).bind('click', clickOrder);
-                $('.facetview_orderby', obj).bind('change', changeOrderBy);
-				$('.facetview_size_drop', obj).bind('change', changePageSize);
+                $('.facetview_orderby', obj).bind('click', changeOrderBy);
+				        $('.facetview_size_drop', obj).bind('click', changePageSize);
                 $('.facetview_searchfield', obj).bind('change', changeSearchField);
                 $('.facetview_sharesave', obj).bind('click', clickShareSave);
                 $('.facetview_freetext', obj).bindWithDelay('keyup', keyupSearchText, options.freetext_submit_delay);
