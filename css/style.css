@@ -64,7 +64,7 @@ td.facetview_filtershow {
   background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #fbfcfd), color-stop(100%, #cfdcec));
   background-image: -webkit-linear-gradient(top, #fbfcfd, #cfdcec);
   background-image: -o-linear-gradient(top, #fbfcfd, #cfdcec);
-  background-image: linear-gradient(#fbfcfd, #cfdcec);
+  background-image: linear-gradient(#fbfcfd, #D7DBDB);
   border-color: #cfdcec #cfdcec hsl(212, 44%, 84%);
   color: #333 !important;
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.19);
