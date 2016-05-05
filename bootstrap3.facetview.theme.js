@@ -34,6 +34,17 @@ function theFacetview(options) {
 
     // the facet view object to be appended to the page
     var thefacetview = '<div id="facetview"><div class="row">';
+    
+    // make space for the search options container at the top
+    thefacetview += '<div class="row"><div class="facetview_search_options_container"></div> <div class="facetview_metadata"></div></div>';
+
+    // TODO Make this configurable
+    var showactivefacets = false;
+
+    if (showactivefacets) {
+    // make space for the selected filters
+    thefacetview += '<div style="margin-top: 20px" id="facetview_selectedfilters"><div class="row"><div class="col-md-12"><div class="btn-toolbar" id="facetview_selectedfilters"></div></div></div></div>';
+    }
 
     // if there are facets, give them span3 to exist, otherwise, take up all the space
     var showfacets = false;
@@ -45,20 +56,12 @@ function theFacetview(options) {
         }
     }
     if (showfacets) {
-        thefacetview += '<div class="col-md-3"><div id="facetview_filters" style="padding-top:45px;"></div></div>';
+        thefacetview += '<div class="col-md-3"><div id="facetview_filters"></div></div>';
         thefacetview += '<div class="col-md-9" id="facetview_rightcol">';
     } else {
         thefacetview += '<div class="col-md-12" id="facetview_rightcol">';
     }
 
-    // make space for the search options container at the top
-    thefacetview += '<div class="facetview_search_options_container"></div>';
-
-    // make space for the selected filters
-    thefacetview += '<div style="margin-top: 20px" id="facetview_selectedfilters"><div class="row"><div class="col-md-12"><div class="btn-toolbar" id="facetview_selectedfilters"></div></div></div></div>';
-
-    // make space at the top for the pager
-    thefacetview += '<div class="facetview_metadata" style="margin-top:20px;"></div>';
 
     // insert loading notification
     thefacetview += '<div class="facetview_searching" style="display:none"></div>'
@@ -175,7 +178,7 @@ function searchOptions(options) {
           ' + pagesizebutton + sortby + sortbutton + ' \
         ';
     
-    var controls_left = '<div id="location" class="form-group col-md-5"> \
+    var controls_left = '<div id="location" class="form-group col-md-4"> \
           <div class="input-group">' + buttons + '</div></div></div>';
 
     var searchfields = "";
@@ -200,12 +203,12 @@ function searchOptions(options) {
             </span>";
     }
 
-    var searchbox = '<div class="form-group col-md-5"> \
+    var searchbox = '<div class="form-group col-md-4"> \
             <div class="input-group col-md-12"> \
                 <input type="text" class="facetview_freetext form-control" name="q" value="" placeholder="Filter by keyword" />';
     searchbox += searchbutton + "</div></div>";
 
-    var searchOptions = '<form class="form-inline"> <div class="row">' + sharesave + controls_left + searchfields + searchbox + "</div></form>";
+    var searchOptions = '<form class="form-inline"> '+ searchbox + sharesave + controls_left + searchfields + "</form>";
 
     // share and save link
     var sharebox = "";
@@ -292,7 +295,7 @@ function renderTermsFacet(facet, options) {
      */
 
     // full template for the facet - we'll then go on and do some find and replace
-    var filterTmpl = '<div class="panel panel-default"><table id="facetview_filter_{{FILTER_NAME}}" class="facetview_filters table table-bordered table-condensed table-striped" data-href="{{FILTER_EXACT}}"> \
+    var filterTmpl = '<div class="panel panel-default facet-panel"><table id="facetview_filter_{{FILTER_NAME}}" class="facetview_filters table table-bordered table-condensed table-striped" data-href="{{FILTER_EXACT}}"> \
         <tr><td class="facetview_filtershow" data-href="{{FILTER_EXACT}}" title="filter by {{FILTER_DISPLAY}}"> \
         <i class="glyphicon glyphicon-triangle-right"></i> {{FILTER_DISPLAY}} \
         </a></tr></td>';
