@@ -338,12 +338,12 @@ function renderRangeFacet(facet, options) {
      */
 
     // full template for the facet - we'll then go on and do some find and replace
-    var filterTmpl = '<table id="facetview_filter_{{FILTER_NAME}}" class="facetview_filters table table-bordered table-condensed table-striped" data-href="{{FILTER_EXACT}}"> \
+    var filterTmpl = '<div class="panel panel-default facet-panel"><table id="facetview_filter_{{FILTER_NAME}}" class="facetview_filters table table-bordered table-condensed table-striped" data-href="{{FILTER_EXACT}}"> \
         <tr><td class="facetview_filtershow" data-href="{{FILTER_EXACT}}" title="filter by {{FILTER_DISPLAY}}"> \
         <i class="glyphicon glyphicon-triangle-right"></i> {{FILTER_DISPLAY}} \
         </a> \
         </td></tr> \
-        </table>';
+        </table></div>';
 
     // put the name of the field into FILTER_NAME and FILTER_EXACT
     filterTmpl = filterTmpl.replace(/{{FILTER_NAME}}/g, safeId(facet['field'])).replace(/{{FILTER_EXACT}}/g, facet['field']);
@@ -397,12 +397,12 @@ function renderDateHistogramFacet(facet, options) {
      */
 
     // full template for the facet - we'll then go on and do some find and replace
-    var filterTmpl = '<table id="facetview_filter_{{FILTER_NAME}}" class="facetview_filters table table-bordered table-condensed table-striped" data-href="{{FILTER_EXACT}}"> \
+    var filterTmpl = '<div class="panel panel-default facet-panel"><table id="facetview_filter_{{FILTER_NAME}}" class="facetview_filters table table-bordered table-condensed table-striped" data-href="{{FILTER_EXACT}}"> \
         <tbody><tr><td class="facetview_filtershow" data-href="{{FILTER_EXACT}}" title="filter by {{FILTER_DISPLAY}}"> \
         <i class="glyphicon glyphicon-triangle-right"></i> {{FILTER_DISPLAY}} \
         </a> \
         </td></tr></tbody> \
-        </table>';
+        </table></div>';
 
     // put the name of the field into FILTER_NAME and FILTER_EXACT
     filterTmpl = filterTmpl.replace(/{{FILTER_NAME}}/g, safeId(facet['field'])).replace(/{{FILTER_EXACT}}/g, facet['field']);

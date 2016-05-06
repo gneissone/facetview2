@@ -207,6 +207,10 @@ function getUrlVars() {
 
 (function($){
     $.fn.facetview = function(options) {
+      
+          // Load the Altmetric badge script
+          $.getScript("https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js", function(){
+          });
     
         /**************************************************************
          * handle the incoming options, default options and url parameters
@@ -822,7 +826,7 @@ function getUrlVars() {
         event.preventDefault();
         sortchoice = ($(this).attr('id'))
         options.behaviour_set_order_by(options, obj, {orderby: sortchoice})
-        $('.dropdown-toggle').html($(this).html() + '<span class="caret"></span>');
+        // $('.dropdown-toggle').html($(this).html() + '<span class="caret"></span>');
         // synchronise the new sort with the options
         saveSortOption(sortchoice);
         
@@ -1372,6 +1376,7 @@ function getUrlVars() {
             $('#facetview_results', obj).children().hide().fadeIn(options.fadein);
             // FIXME: is possibly a debug feature?
             // $('.facetview_viewrecord', obj).bind('click', viewrecord);
+
         }
         
         /**************************************************************
@@ -1464,6 +1469,8 @@ function getUrlVars() {
         function queryComplete(jqXHR, textStatus) {
             options.behaviour_finished_searching(options, obj);
             options.searching = false;
+            // For altmetric badge. The JS file must be included in the html file.
+            _altmetric_embed_init();
         }
 
         function pruneActiveFilters() {
