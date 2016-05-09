@@ -70,3 +70,8 @@ td.facetview_filtershow {
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.19);
   -webkit-font-smoothing: antialiased;
 }
+
+.dropdown-menu .selected:after {
+  font-family: "Glyphicons Halflings";
+  content:"\0020\e013";
+}

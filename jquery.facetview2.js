@@ -802,6 +802,10 @@ function getUrlVars() {
             event.preventDefault();
             sizechoice = ($(this).attr('id'))
             
+            // switch item with 'selected' class
+            $('.facetview_size_drop', obj).removeClass('selected')
+            $(this).addClass('selected')
+
             // synchronise the new sort with the options
             savePageSizeOption(sizechoice);
             
@@ -826,6 +830,11 @@ function getUrlVars() {
         event.preventDefault();
         sortchoice = ($(this).attr('id'))
         options.behaviour_set_order_by(options, obj, {orderby: sortchoice})
+        
+        // switch item with 'selected' class
+        $('.facetview_orderby', obj).removeClass('selected')
+        $(this).addClass('selected')
+        
         // $('.dropdown-toggle').html($(this).html() + '<span class="caret"></span>');
         // synchronise the new sort with the options
         saveSortOption(sortchoice);

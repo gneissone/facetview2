@@ -1,0 +1,8 @@
+
+.btn-group.hidden {
+    display: none !important
+}
+
+.facetview_filters.hidden {
+    display: none; !important;
+}
