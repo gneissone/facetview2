@@ -157,9 +157,11 @@ function optionsFromQuery(query) {
             if (qs.query_string) {
                 var string = unescapeQueryString(qs.query_string.query);
                 var field = qs.query_string.default_field;
+                var multi_field = qs.query_string.fields;
                 var op = qs.query_string.default_operator;
                 if (string) { opts["q"] = string }
                 if (field) { opts["searchfield"] = field }
+                if (multi_field) { opts["fields"] = multi_field }
                 if (op) { opts["default_operator"] = op }
             } else if (qs.match_all) {
                 opts["q"] = ""
@@ -281,11 +283,16 @@ function elasticSearchQuery(params) {
     var querystring = options.q;
     var searchfield = options.searchfield;
     var default_operator = options.default_operator;
+    var search_fields_multi = options.search_fields_multi;
+    
     var ftq = undefined;
     if (querystring) {
         ftq = {'query_string' : { 'query': fuzzify(querystring, options.default_freetext_fuzzify) }};
         if (searchfield) {
             ftq.query_string["default_field"] = searchfield
+        }
+        else if (search_fields_multi) {
+            ftq.query_string["fields"] = search_fields_multi
         }
         if (default_operator) {
             ftq.query_string["default_operator"] = default_operator
@@ -520,4 +527,3 @@ function doElasticSearchQuery(params) {
         complete: complete_callback
     });
 }
-

@@ -272,6 +272,12 @@ function getUrlVars() {
             // field on which to focus the freetext search
             "searchfield" : "", // e.g. title.exact
             
+            // fields to search on the freetext search
+            // NOTE ignored if searchfield is set. 
+            // functionally, searchfield sets 'default_field' in the elasticsearch query
+            // while search_fields_multi sets 'fields'
+            "search_fields_multi" : "", // e.g. ["*folded","_all"]
+            
             // freetext search string
             "q" : "",
             
