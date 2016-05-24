@@ -840,9 +840,11 @@ function basicPager(options) {
 
     // calculate the human readable values we want
     var to = from + size;
-    from = from + 1; // zero indexed
     if (options.data.found < to) { to = options.data.found }
     var total = options.data.found;
+    if (total != 0) {
+      from = from + 1; // zero indexed
+    }
 
     // forward and back-links, taking into account start and end boundaries
     var backlink = '<a class="facetview_decrement">&laquo; back</a>';

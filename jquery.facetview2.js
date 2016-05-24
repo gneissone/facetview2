@@ -362,8 +362,8 @@ function getUrlVars() {
             "default_date_histogram_sort" : "asc",
             "default_short_display" : false,
             "default_ignore_empty_string" : false,      // because filtering out empty strings is less performant
-			"default_tooltip" : false,
-			"default_tooltip_text" : "learn more",	
+            "default_tooltip" : false,
+            "default_tooltip_text" : "learn more",
 			
 
             ///// search bar configuration /////////////////////////////
@@ -1362,10 +1362,10 @@ function getUrlVars() {
         /////// display results metadata /////////////////////////////////
         
         function setUIResultsMetadata() {
-            if (!options.data.found) {
+            /*  if (!options.data.found) {
                 $('.facetview_metadata', obj).html("");
                 return
-            }
+            } */
             frag = options.render_results_metadata(options);
             $('.facetview_metadata', obj).html(frag);
             $('.facetview_decrement', obj).bind('click', decrementPage);
