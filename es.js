@@ -302,10 +302,6 @@ function elasticSearchQuery(params) {
         ftq = {"match_all" : {}}
     }
 
-    if (min_score) {
-      qs['min_score'] = min_score;
-    }
-
     // if there are filter constraints (filter_must) then we create a filtered query,
     // otherwise make a normal query
     var qs = undefined;
@@ -315,7 +311,11 @@ function elasticSearchQuery(params) {
     } else {
         qs = {"query" : ftq}
     }
-    
+
+    if (min_score) {
+      qs['min_score'] = min_score;
+    }
+
     // sort order and direction
     options.sort && options.sort.length > 0 ? qs['sort'] = options.sort : "";
     
