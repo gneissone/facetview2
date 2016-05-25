@@ -284,7 +284,8 @@ function elasticSearchQuery(params) {
     var searchfield = options.searchfield;
     var default_operator = options.default_operator;
     var search_fields_multi = options.search_fields_multi;
-    
+    var min_score = options.min_score;
+
     var ftq = undefined;
     if (querystring) {
         ftq = {'query_string' : { 'query': fuzzify(querystring, options.default_freetext_fuzzify) }};
@@ -300,7 +301,11 @@ function elasticSearchQuery(params) {
     } else {
         ftq = {"match_all" : {}}
     }
-    
+
+    if (min_score) {
+      qs['min_score'] = min_score;
+    }
+
     // if there are filter constraints (filter_must) then we create a filtered query,
     // otherwise make a normal query
     var qs = undefined;

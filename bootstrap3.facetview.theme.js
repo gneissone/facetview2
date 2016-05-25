@@ -155,7 +155,7 @@ function searchOptions(options) {
         <button id="btnGroupDrop1" type="button" class="btn btn-custom dropdown-toggle \
         " data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> \
         Sort by... <span class="caret"></span></button> <ul class="dropdown-menu" \
-        aria-labelledby="btnGroupDrop1"> <li><a class="dropdown-item facetview_orderby" id="_score" href="_score">Relevance</a></li>';
+        aria-labelledby="btnGroupDrop1">';
 
         for (var each = 0; each < options.search_sortby.length; each++) {
             var obj = options.search_sortby[each];

@@ -278,6 +278,10 @@ function getUrlVars() {
             // while search_fields_multi sets 'fields'
             "search_fields_multi" : "", // e.g. ["*folded","_all"]
             
+            // minimum score for returned free text query results
+            // usually only necessary if searching a field indexed using an ngram analyzer
+            "min_score" : null,
+
             // freetext search string
             "q" : "",
             
