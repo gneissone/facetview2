@@ -845,6 +845,13 @@ function basicPager(options) {
     if (total != 0) {
       from = from + 1; // zero indexed
     }
+    
+    if (!total || total == 0){
+      totaltext = ''
+    }
+    else {
+       totaltext = ' of ' + total
+    }
 
     // forward and back-links, taking into account start and end boundaries
     var backlink = '<a class="facetview_decrement">&laquo; back</a>';

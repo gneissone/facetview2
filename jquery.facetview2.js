@@ -1580,6 +1580,9 @@ function getUrlVars() {
                     facetVisibility();
                 }
                 
+                // add the results metadata (paging, etc)
+                setUIResultsMetadata();
+                
                 // add the loading notification
                 if (searching != "") {
                     $(".facetview_searching", obj).html(searching)
