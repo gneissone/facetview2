@@ -33,18 +33,10 @@ function theFacetview(options) {
      */
 
     // the facet view object to be appended to the page
-    var thefacetview = '<div id="facetview"><div class="row">';
+    var thefacetview = '<div id="facetview" class="container-fluid"><div class="row">';
     
     // make space for the search options container at the top
-    thefacetview += '<div class="row"><div class="facetview_search_options_container"></div> <div class="facetview_metadata"></div></div>';
-
-    // TODO Make this configurable
-    var showactivefacets = false;
-
-    if (showactivefacets) {
-    // make space for the selected filters
-    thefacetview += '<div style="margin-top: 20px" id="facetview_selectedfilters"><div class="row"><div class="col-md-12"><div class="btn-toolbar" id="facetview_selectedfilters"></div></div></div></div>';
-    }
+    thefacetview += '<div class="row col-md-12 col-sm-12 col-xs-8" style="padding:0;"><div class="facetview_search_box_container col-md-3 col-sm-7 col-xs-6 pull-left"></div><div class="facetview_search_options_container col-md-4 col-sm-5 col-xs-6"></div> ';
 
     // if there are facets, give them span3 to exist, otherwise, take up all the space
     var showfacets = false;
@@ -55,9 +47,33 @@ function theFacetview(options) {
             break;
         }
     }
+
     if (showfacets) {
-        thefacetview += '<div class="col-md-3"><div id="facetview_filters"></div></div>';
-        thefacetview += '<div class="col-md-9" id="facetview_rightcol">';
+      thefacetview += '<div class="col-xs-3 col-sm-3 visible-xs visible-sm"><button class="btn btn-custom" data-toggle="collapse" data-target="#facets">Narrow search</button></div>'
+    }
+
+    // pagination
+    thefacetview += '<div class="facetview_metadata col-md-4 col-sm-6 col-xs-6"></div>'
+
+    // csv export button
+    if (options.csv_export) {
+      thefacetview += '<div class="form-group col-md-1 col-sm-1 col-xs-1 pull-right"><a href="#" class="btn btn-custom facetview_csv pull-right" data-toggle="tooltip" data-placement="bottom" title="Export as CSV" ><span class="glyphicon glyphicon-floppy-save"></span></a></div>'
+    }
+    
+    thefacetview += '</div>'
+
+    // TODO Make this configurable
+    var showactivefacets = false;
+
+    if (showactivefacets) {
+    // make space for the selected filters
+    thefacetview += '<div style="margin-top: 20px" id="facetview_selectedfilters"><div class="row"><div class="col-md-12"><div class="btn-toolbar" id="facetview_selectedfilters"></div></div></div></div>';
+    }
+
+  
+    if (showfacets) {
+        thefacetview += '<div class="col-md-3 col-sm-12 col-xs-8 hidden-xs hidden-sm visible-md visible-lg facets" id="facets"><div id="facetview_filters"></div></div>';
+        thefacetview += '<div class="col-md-9 col-sm-12 col-xs-8" id="facetview_rightcol">';
     } else {
         thefacetview += '<div class="col-md-12" id="facetview_rightcol">';
     }
@@ -114,7 +130,7 @@ function searchOptions(options) {
 
     var sortbutton = "";
     if (options.search_sortby.length > 0) {
-        sortbutton = '<button type="submit" class="btn btn-custom facetview_order" title="Current order descending. Click to change to ascending" value="desc" href="desc"> \
+        sortbutton = '<button type="submit" class="btn btn-custom facetview_order" data-toggle="tooltip" data-placement="bottom" title="Current order descending. Click to change to ascending" value="desc" href="desc"> \
                 <span class="glyphicon glyphicon-arrow-down"></span> \
             </button>';
     }
@@ -155,7 +171,7 @@ function searchOptions(options) {
         <button id="btnGroupDrop1" type="button" class="btn btn-custom dropdown-toggle \
         " data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> \
         Sort by... <span class="caret"></span></button> <ul class="dropdown-menu" \
-        aria-labelledby="btnGroupDrop1">';
+        aria-labelledby="btnGroupDrop1"> ';
 
         for (var each = 0; each < options.search_sortby.length; each++) {
             var obj = options.search_sortby[each];
@@ -173,42 +189,17 @@ function searchOptions(options) {
     }
     
     var buttons = '<div class="btn-group" role="group" aria-label="Options"> \
-            <button type="submit" class="btn btn-custom facetview_startagain" title="Clear all search settings and start again" href=""> \
+            <button type="submit" class="btn btn-custom facetview_startagain" data-toggle="tooltip" data-placement="bottom" title="Clear all search settings and start again" href=""> \
                 <span class="glyphicon glyphicon-remove"></span></button> \
           ' + pagesizebutton + sortby + sortbutton + ' \
         ';
     
-    var controls_left = '<div id="location" class="form-group col-md-4"> \
+    var controls_left = '<div id="location" class="form-group"> \
           <div class="input-group">' + buttons + '</div></div></div>';
 
-    var searchfields = "";
-    if (options.searchbox_fieldselect.length > 0) {
-        searchfields = '<div class="form-group col-md-2"> \
-                <select class="facetview_searchfield form-control"> \
-                    <option value="">Search all</option>';
+    
 
-        for (var each = 0; each < options.searchbox_fieldselect.length; each++) {
-            var obj = options.searchbox_fieldselect[each];
-            searchfields += '<option value="' + obj['field'] + '">' + obj['display'] + '</option>';
-        }
-        searchfields += '</select></div>';
-    }
-
-    var searchbutton = "";
-    if (options.search_button) {
-        searchbutton = "<span class='input-group-btn'> \
-                <button class='btn btn-info facetview_force_search'> \
-                    <span class='glyphicon glyphicon-white glyphicon-search'></span> \
-                </button> \
-            </span>";
-    }
-
-    var searchbox = '<div class="form-group col-md-4"> \
-            <div class="input-group col-md-12"> \
-                <input type="text" class="facetview_freetext form-control" name="q" value="" placeholder="Filter by keyword" />';
-    searchbox += searchbutton + "</div></div>";
-
-    var searchOptions = '<form class="form-inline"> '+ searchbox + sharesave + controls_left + searchfields + "</form>";
+    var searchOptions = '<form class="form-group pull-right"> ' + sharesave + controls_left + "</form>";
 
     // share and save link
     var sharebox = "";
@@ -230,6 +221,38 @@ function searchOptions(options) {
     }
 
     return searchOptions + sharebox;
+}
+
+function searchBox(options) {
+  var searchfields = "";
+  if (options.searchbox_fieldselect.length > 0) {
+      searchfields = '<div class="form-group col-md-2"> \
+              <select class="facetview_searchfield form-control"> \
+                  <option value="">Search all</option>';
+
+      for (var each = 0; each < options.searchbox_fieldselect.length; each++) {
+          var obj = options.searchbox_fieldselect[each];
+          searchfields += '<option value="' + obj['field'] + '">' + obj['display'] + '</option>';
+      }
+      searchfields += '</select></div>';
+  }
+
+  var searchbutton = "";
+  if (options.search_button) {
+      searchbutton = "<span class='input-group-btn'> \
+              <button class='btn btn-info facetview_force_search'> \
+                  <span class='glyphicon glyphicon-white glyphicon-search'></span> \
+              </button> \
+          </span>";
+  }
+
+  var searchbox = '<div class="form-group"> \
+          <div class="input-group col-md-12 col-sm-12 col-xs-12"> \
+              <input type="text" class="facetview_freetext form-control" name="q" value="" placeholder="Filter by keyword" />';
+  searchbox += searchbutton + "</div></div>";
+  
+  return searchbox
+  
 }
 
 function facetList(options) {
@@ -837,7 +860,7 @@ function basicPager(options) {
     // ensure our starting points are integers, then we can do maths on them
     var from = parseInt(options.from);
     var size = parseInt(options.page_size);
-
+    
     // calculate the human readable values we want
     var to = from + size;
     if (options.data.found < to) { to = options.data.found }
@@ -862,7 +885,7 @@ function basicPager(options) {
 
     var meta = '<nav><ul class="pagination">';
     meta += '<li class="prev">' + backlink + '</li>';
-    meta += '<li class="active"><a>' + from + ' &ndash; ' + to + ' of ' + total + '</a></li>';
+    meta += '<li class="active"><a>' + from + ' &ndash; ' + to + totaltext + '</a></li>';
     meta += '<li class="next">' + nextlink + '</li>';
     meta += "</ul></nav>";
 
@@ -1453,11 +1476,11 @@ function setResultsOrder(options, context, order) {
     if (order === 'asc') {
         $('.facetview_order', context).html('<i class="glyphicon glyphicon-arrow-up"></i>');
         $('.facetview_order', context).attr('href','asc');
-        $('.facetview_order', context).attr('title','current order ascending. Click to change to descending');
+        $('.facetview_order', context).attr('title','Current order ascending. Click to change to descending').tooltip('fixTitle').tooltip('show');;
     } else {
         $('.facetview_order', context).html('<i class="glyphicon glyphicon-arrow-down"></i>');
         $('.facetview_order', context).attr('href','desc');
-        $('.facetview_order', context).attr('title','current order descending. Click to change to ascending');
+        $('.facetview_order', context).attr('title','Current order descending. Click to change to ascending').tooltip('fixTitle').tooltip('show');;
     }
 }
 

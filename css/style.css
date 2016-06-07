@@ -40,7 +40,12 @@ h4 {
 }
 
 .form-inline > * {
-    margin:15px 3px;
+//    margin:15px 3px;
+}
+
+.pagination {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
 }
 
 .pagination>.active>a, .pagination>.active>a:hover {
@@ -112,4 +117,31 @@ dl.doc_info_list dd {
     margin: 0;
     padding: 0.2em 0;
     width: 78%;
+}
+
+
+.tooltip-inner {
+    background-color: #00acd6;
+    color: #fff;
+}
+
+.tooltip.top .tooltip-arrow {
+    border-top-color: #00acd6;
+}
+
+.tooltip.right .tooltip-arrow {
+    border-right-color: #00acd6;
+}
+
+.tooltip.bottom .tooltip-arrow {
+    border-bottom-color: #00acd6;
+}
+
+.tooltip.left .tooltip-arrow {
+    border-left-color: #00acd6;
+}
+
+#facets.in,
+#facets.collapsing {
+    display: block!important;
 }

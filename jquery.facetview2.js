@@ -281,9 +281,15 @@ function getUrlVars() {
             // minimum score for returned free text query results
             // usually only necessary if searching a field indexed using an ngram analyzer
             "min_score" : null,
-
+ 
             // freetext search string
             "q" : "",
+
+            // add a button for csv export. requires the elasticsearch csv plugin (https://github.com/jprante/elasticsearch-csv)
+            "csv_export" : false,
+
+            // key fields to add to CSV export. usually best to set this on type by type basis.
+            "csv_keys" : "",
             
             ///// facet aspects /////////////////////////////
             
@@ -367,7 +373,7 @@ function getUrlVars() {
             "default_short_display" : false,
             "default_ignore_empty_string" : false,      // because filtering out empty strings is less performant
             "default_tooltip" : false,
-            "default_tooltip_text" : "learn more",
+	    "default_tooltip_text" : "learn more",
 			
 
             ///// search bar configuration /////////////////////////////
@@ -457,7 +463,10 @@ function getUrlVars() {
             // render the frame within which the facetview sits
             "render_the_facetview" : theFacetview,
             
-            // render the search options - containing freetext search, sorting, etc
+            // render the search box - containing freetext search
+            "render_search_box" : searchBox,
+
+            // render the search options - containing sorting, etc
             "render_search_options" : searchOptions,
             
             // render the list of available facets.  This will in turn call individual render methods
@@ -717,19 +726,27 @@ function getUrlVars() {
 			// options.behaviour_set_page_size_drop(options, obj, {size: options.page_size});
             
             // set the search order
-            // NOTE: that this interface only supports single field ordering
             var sorting = options.sort;
-
-            for (var i = 0; i < sorting.length; i++) {
+            
+            if (sorting.length > 1) {
+              var fields = [];
+              for (var i = 0; i < sorting.length; i++) {
                 var so = sorting[i];
-                var fields = Object.keys(so);
-                for (var j = 0; j < fields.length; j++) {
-                    var dir = so[fields[j]]["order"];
-                    options.behaviour_set_order(options, obj, {order: dir});
-                    options.behaviour_set_order_by(options, obj, {orderby: fields[j]});
-                    break
-                }
-                break
+                var field = Object.keys(so);
+                fields.push(field)
+              }
+              sortoption = ''
+              sortoption = sortoption + '[';
+              sortoption = sortoption + "'" + fields.join("','") + "'";
+              sortoption = sortoption + ']';
+              // Do we need to set the order direction here?
+              options.behaviour_set_order_by(options, obj, {orderby: sortoption});
+            }
+            else {
+              sortoption = Object.keys(sorting[0])[0]
+              var dir = sorting[0][sortoption]["order"];
+              options.behaviour_set_order(options, obj, {order: dir});
+              options.behaviour_set_order_by(options, obj, {orderby: sortoption});
             }
             
             // set the search field
@@ -875,9 +892,11 @@ function getUrlVars() {
     // save the sort options from the current UI
            function saveSortOption(sortchoice) {
 
-               if (!sortchoice) { // I'm sure there's a beter way to do this
+               if (!sortchoice) { // I'm sure there's a beter way to do this //THIS NEEDS TO BE SET TO THE CORRECT SORT OPTIONS!!!!!
                  var sortchoice = $('.facetview_orderby', obj).val();
                }
+                                      console.log($('.facetview_orderby', obj))
+                                      console.log($('.facetview_orderby', obj).val())
                
                if (sortchoice) {
                    var sorting = [];
@@ -903,7 +922,57 @@ function getUrlVars() {
                    options.sort = sorting
                }
            }
-        
+
+           /////// csv export /////////////////////////////////
+           
+           function clickCSV(event) {
+               event.preventDefault();
+               
+               if (options.csv_keys) {
+                 csv_link = options.search_url + '_csv' + shareableUrl(options,true).replace('size%22%3A10','size%22%3A999999') + '&keys=' + options.csv_keys 
+               }
+               else {
+                 
+                 var data = options.data.records
+                 var result = []
+                  function recurse (cur, prop) {
+                      if (Object(cur) !== cur) {
+                          result[prop] = cur;
+                      } else if (Array.isArray(cur)) {
+                           for(var i=0, l=cur.length; i<l; i++)
+                               recurse(cur[i], prop + "." + i + "");
+                          if (l == 0)
+                              result[prop] = [];
+                      } else {
+                          var isEmpty = true;
+                          for (var p in cur) {
+                              isEmpty = false;
+                              recurse(cur[p], prop ? prop+"."+p : p);
+                          }
+                          if (isEmpty && prop)
+                              result[prop] = {};
+                      }
+                  }
+                  recurse(data, "");
+                  
+                  row = ['name','uri'];
+                  for (key in result){
+                    numlength = (key.split('.',2)[1].length) // there's gotta be a better way
+                    
+                    key = key.substr(2+numlength)
+                    if (row.indexOf(key) < 0) {
+                    row.push(key)
+                    }
+                  }              
+                 
+                 
+                 
+                csv_link = options.search_url + '_csv' + shareableUrl(options,true).replace('size%22%3A10','size%22%3A999999') + '&keys=' + row.join()
+               }
+               window.location.href = csv_link;
+                
+           }
+
         /////// search fields /////////////////////////////////
         
         // adjust the search field focus
@@ -1366,10 +1435,10 @@ function getUrlVars() {
         /////// display results metadata /////////////////////////////////
         
         function setUIResultsMetadata() {
-            /*  if (!options.data.found) {
-                $('.facetview_metadata', obj).html("");
-                return
-            } */
+          /*  if (!options.data.found) {
+              $('.facetview_metadata', obj).html("");
+              return
+          } */
             frag = options.render_results_metadata(options);
             $('.facetview_metadata', obj).html(frag);
             $('.facetview_decrement', obj).bind('click', decrementPage);
@@ -1538,7 +1607,7 @@ function getUrlVars() {
             
             // augment the URL bar if possible, and the share/save link
             urlFromOptions();
-            
+
             // issue the query to elasticsearch
             doElasticSearchQuery({
                 search_url: options.search_url,
@@ -1559,6 +1628,7 @@ function getUrlVars() {
         
         // render the facetview frame which will then be populated
         var thefacetview = options.render_the_facetview(options);
+        var thesearchbox = options.render_search_box(options);
         var thesearchopts = options.render_search_options(options);
         var thefacets = options.render_facet_list(options);
         var searching = options.render_searching_notification(options);
@@ -1574,6 +1644,9 @@ function getUrlVars() {
                 // append the facetview object to this object
                 obj.append(thefacetview);
                 
+                // add the search box
+                $(".facetview_search_box_container", obj).html(thesearchbox);
+                
                 // add the search controls
                 $(".facetview_search_options_container", obj).html(thesearchopts);
                 
@@ -1583,6 +1656,8 @@ function getUrlVars() {
                     $('#facetview_filters', obj).html(thefacets);
                     facetVisibility();
                 }
+                
+                $('[data-toggle="tooltip"]').tooltip(); 
                 
                 // add the results metadata (paging, etc)
                 setUIResultsMetadata();
@@ -1613,6 +1688,8 @@ function getUrlVars() {
                 $('.facetview_morefacetvals', obj).bind('click', clickMoreFacetVals);
                 $('.facetview_sort', obj).bind('click', clickSort);
                 $('.facetview_or', obj).bind('click', clickOr);
+                
+                $('.facetview_csv', obj).bind('click', clickCSV);
 
                 $(document).on('click', '.facetview_allfacetvals', clickAllFacetVals);
 
