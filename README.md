@@ -1,10 +1,20 @@
-#FacetView2
+#FacetView2 - Connect UNAVCO
 
 a pure javascript frontend for ElasticSearch search indices.
 
 It has been developed as a jQuery plugin and lets you easily embed a faceted browse front end into any web page.
 
 FacetView2 is a major re-write of the original FacetView application.  See https://github.com/okfn/facetview for the previous version.
+
+## Customizations
+
+This fork has been developed for implementation as part of [Connect UNAVCO](http://connect.unavco.org). Some customizations may be of interest:
+
+* Replacement of popup dialogs with links or dropdown menus
+* Ability to specify multiple fields to search ('fields' instead of 'default_field' in Elasticsearch)
+* Sort by 'relevance' is no longer written directly into the bootstrap template  and can be sorted by a secondary field (e.g. search_sortby: [{"display":"Relevance","field":["_score","name.sort"]}])
+* Specify a min_score for results - especially useful when searching ngram or other tokenized fields
+* CSV export feature (requires [a plugin](https://github.com/jprante/elasticsearch-csv) which in turn requires Java 8)
 
 ## Using FacetView2
 
