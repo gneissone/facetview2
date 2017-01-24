@@ -36,7 +36,7 @@ function theFacetview(options) {
     var thefacetview = '<div id="facetview" class="container-fluid"><div class="row">';
 
     // make space for the search options container at the top
-    thefacetview += '<div class="row col-md-12 col-sm-12 col-xs-12" style="padding:0;"><div class="facetview_search_box_container col-md-3 col-sm-7 col-xs-12 pull-left"></div><div class="facetview_search_options_container col-md-4 col-sm-5 col-xs-12"></div> ';
+    thefacetview += '<div class="row col-md-12 col-sm-12 col-xs-12" style="padding:0;"><div class="facetview_search_box_container col-md-3 col-sm-6 col-xs-12 pull-left"></div><div class="facetview_search_options_container col-md-4 col-sm-6 col-xs-12"></div> ';
 
     // if there are facets, give them span3 to exist, otherwise, take up all the space
     var showfacets = false;
