@@ -34,9 +34,9 @@ function theFacetview(options) {
 
     // the facet view object to be appended to the page
     var thefacetview = '<div id="facetview" class="container-fluid"><div class="row">';
-    
+
     // make space for the search options container at the top
-    thefacetview += '<div class="row col-md-12 col-sm-12 col-xs-8" style="padding:0;"><div class="facetview_search_box_container col-md-3 col-sm-7 col-xs-6 pull-left"></div><div class="facetview_search_options_container col-md-4 col-sm-5 col-xs-6"></div> ';
+    thefacetview += '<div class="row col-md-12 col-sm-12 col-xs-12" style="padding:0;"><div class="facetview_search_box_container col-md-3 col-sm-7 col-xs-12 pull-left"></div><div class="facetview_search_options_container col-md-4 col-sm-5 col-xs-12"></div> ';
 
     // if there are facets, give them span3 to exist, otherwise, take up all the space
     var showfacets = false;
@@ -48,18 +48,18 @@ function theFacetview(options) {
         }
     }
 
+    // pagination
+    thefacetview += '<div class="facetview_metadata col-md-4 col-sm-6 col-xs-12"></div>'
+
     if (showfacets) {
       thefacetview += '<div class="col-xs-3 col-sm-3 visible-xs visible-sm"><button class="btn btn-custom" data-toggle="collapse" data-target="#facets">Narrow search</button></div>'
     }
-
-    // pagination
-    thefacetview += '<div class="facetview_metadata col-md-4 col-sm-6 col-xs-6"></div>'
 
     // csv export button
     if (options.csv_export) {
       thefacetview += '<div class="form-group col-md-1 col-sm-1 col-xs-1 pull-right"><a href="#" class="btn btn-custom facetview_csv pull-right" data-toggle="tooltip" data-placement="bottom" title="Export as CSV" ><span class="glyphicon glyphicon-floppy-save"></span></a></div>'
     }
-    
+
     thefacetview += '</div>'
 
     // TODO Make this configurable
@@ -70,10 +70,10 @@ function theFacetview(options) {
     thefacetview += '<div style="margin-top: 20px" id="facetview_selectedfilters"><div class="row"><div class="col-md-12"><div class="btn-toolbar" id="facetview_selectedfilters"></div></div></div></div>';
     }
 
-  
+
     if (showfacets) {
         thefacetview += '<div class="col-md-3 col-sm-12 col-xs-8 hidden-xs hidden-sm visible-md visible-lg facets" id="facets"><div id="facetview_filters"></div></div>';
-        thefacetview += '<div class="col-md-9 col-sm-12 col-xs-8" id="facetview_rightcol">';
+        thefacetview += '<div class="col-md-9 col-sm-12 col-xs-12" id="facetview_rightcol">';
     } else {
         thefacetview += '<div class="col-md-12" id="facetview_rightcol">';
     }
@@ -134,7 +134,7 @@ function searchOptions(options) {
                 <span class="glyphicon glyphicon-arrow-down"></span> \
             </button>';
     }
-    
+
     var pagesizedrop = "";
     // Page size drop down menu
     if (options.page_size_dropdown) {
@@ -145,7 +145,7 @@ function searchOptions(options) {
           aria-labelledby="btnGroupDrop1">' ;
         if (options.page_size_options.indexOf(options.page_size) == -1) {
         options.page_size_options.push(options.page_size); // Add the default page size if it's not in the list
-        options.page_size_options = options.page_size_options.sort(function (a, b) { 
+        options.page_size_options = options.page_size_options.sort(function (a, b) {
             return a - b;
         });
         }
@@ -154,8 +154,8 @@ function searchOptions(options) {
             pagesizedrop += '<li><a class="dropdown-item facetview_size_drop" id="' + obj + '">' + obj + '</a></li>';
         };
       pagesizedrop += '</ul></div>';
-      };	
-    
+      };
+
     var pagesizebutton = ''
     if (!options.page_size_dropdown) {
         pagesizebutton += '<a class="btn btn-small facetview_pagesize" title="change result set size" href="#"></a>';
@@ -187,19 +187,19 @@ function searchOptions(options) {
         }
         sortby += "</ul></div>";
     }
-    
+
     var buttons = '<div class="btn-group" role="group" aria-label="Options"> \
             <button type="submit" class="btn btn-custom facetview_startagain" data-toggle="tooltip" data-placement="bottom" title="Clear all search settings and start again" href=""> \
                 <span class="glyphicon glyphicon-remove"></span></button> \
           ' + pagesizebutton + sortby + sortbutton + ' \
         ';
-    
+
     var controls_left = '<div id="location" class="form-group"> \
           <div class="input-group">' + buttons + '</div></div></div>';
 
-    
 
-    var searchOptions = '<form class="form-group pull-right"> ' + sharesave + controls_left + "</form>";
+
+    var searchOptions = '<form> ' + sharesave + controls_left + "</form>";
 
     // share and save link
     var sharebox = "";
@@ -250,9 +250,9 @@ function searchBox(options) {
           <div class="input-group col-md-12 col-sm-12 col-xs-12"> \
               <input type="text" class="facetview_freetext form-control" name="q" value="" placeholder="Filter by keyword" />';
   searchbox += searchbutton + "</div></div>";
-  
+
   return searchbox
-  
+
 }
 
 function facetList(options) {
@@ -489,11 +489,11 @@ function renderTermsFacetValues(options, facet) {
             frag += append
         }
     }
-    
+
     // Add a ... view n more link at end of facet list
     var facet_terms_remaining = []
     facet_terms_remaining[facet.field] = options.data.facets[facet.field].length - facet["values"].length
-    
+
     if (facet_terms_remaining[facet.field] > 0) {
     frag += '<div id="testdiv"><tr class="facetview_filtervalue" style="display:none;"><td><a class="facetview_allfacetvals" value="5" title="filter list size" href="' +
         facet.field + '"> <b>... view ' + facet_terms_remaining[facet.field] + ' more</b>' +
@@ -823,7 +823,7 @@ function renderDateHistogramResult(options, facet, result, next) {
      * class: facetview_filterchoice - tags the anchor wrapped around the name of the field
      */
     result.time = new Date(result.time).getUTCFullYear(); //Hack to get it show year instead of milliseconds
-   	
+
     var data_from = result.time ? " data-from='" + result.time + "' " : "";
     var data_to = next ? " data-to='" + next.time + "' " : "";
 
@@ -860,7 +860,7 @@ function basicPager(options) {
     // ensure our starting points are integers, then we can do maths on them
     var from = parseInt(options.from);
     var size = parseInt(options.page_size);
-    
+
     // calculate the human readable values we want
     var to = from + size;
     if (options.data.found < to) { to = options.data.found }
@@ -868,7 +868,7 @@ function basicPager(options) {
     if (total != 0) {
       from = from + 1; // zero indexed
     }
-    
+
     if (!total || total == 0){
       totaltext = ''
     }
