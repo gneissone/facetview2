@@ -7,6 +7,19 @@ body {
   /* padding-top: 40px; /* 40px to make the container go all the way to the bottom of the topbar */
 }
 
+.label-primary-transparent {
+  font-size: 13px;
+  background: transparent;
+  border: 1px solid #337ab7;
+  color: #337ab7;
+  font-weight: 400;
+  transition: all 0.5s;
+}
+.label-primary-transparent:hover {
+  background: #337ab7;
+  color: #fff;
+}
+
 .content {
   background-color: #fff;
   padding: 20px;
@@ -56,7 +69,7 @@ h4 {
 
 td.facetview_filtershow {
   cursor: pointer;
-  
+
 }
 
 .btn-custom {
@@ -75,7 +88,7 @@ td.facetview_filtershow {
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.19);
   -webkit-font-smoothing: antialiased;
 }
- 
+
 .dropdown-menu .selected:after {
   font-family: "Glyphicons Halflings";
   content:"\0020\e013";
