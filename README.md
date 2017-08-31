@@ -1,4 +1,4 @@
-#FacetView2 - Connect UNAVCO
+# FacetView2 - Connect UNAVCO
 
 a pure javascript frontend for ElasticSearch search indices.
 
@@ -57,7 +57,8 @@ There will be more documentation here on how to do that, but in the mean time, t
 Copyright and License
 =====================
 
-Copyright 2014 Cottage Labs.
+Copyright 2017 Benjamin Gross.
+Original FacetView2 frontend Copyright 2014 Cottage Labs
 
 Licensed under the MIT Licence
 
